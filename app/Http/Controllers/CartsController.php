@@ -21,27 +21,22 @@ class CartsController extends Controller
         $subtotal = Money::BRL(0);
         $discount = Money::BRL(0);
 
-        $quantity = 0;
+       // $quantity = 0;
+       // $discount = 0;
         foreach ($request->get('products') as $product) {
             $unitPrice = $moneyParser->parse($product['unitPrice'], 'BRL');
             $amount = $unitPrice->multiply($product['quantity']);
-           // $amount = $unitPrice->multiply($this->quantityToBy($product['quantity']));
-           // dd($this->isMultipleOf3($product['quantity']) );
-          //  $discount = $discount->add($unitPrice->multiply($this->quantityToDiscount($product['quantity'])) );
-          // $quantity =  $quantity + $product['quantity'];
-           // dd($product['id']);
+
+            $discountAmount = $unitPrice->multiply($this->quantityToDiscount($product['quantity']));
+            $discount = $discount->add($discountAmount);
             $subtotal = $subtotal->add($amount);
-           // $discount = Money::BRL($this->availableDiscount($subtotal,$product['quantity'])) ;
-           // dd($discount);
+
         }
-          //  dd($request->get('products'));
-        //dd($quantity);
 
-        $discount = Money::BRL($this->availableDiscount($subtotal ));
-      //  $discount = $discount->add("0");
         $total = $subtotal->subtract($discount);
-        $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
-
+      //  $strategy = 'none';
+       // $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
+        $strategy = 'take-3-pay-2';
        // dd($this->quantityToBy(4) );
         return new JsonResponse(
             [
