@@ -1,0 +1,19 @@
+{
+    "request": {
+        "body": []
+    },
+    "response": {
+        "statusCode": 422,
+        "body": {
+            "message": "The given data was invalid.",
+            "errors": {
+                "userEmail": [
+                    "The user email field is required."
+                ],
+                "products": [
+                    "The products field is required."
+                ]
+            }
+        }
+    }
+}

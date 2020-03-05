@@ -1,0 +1,27 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "janedoe@gmail.com",
+            "products": [
+                {
+                    "id": "b8be61e7-c170-5623-9ff7-00b2d83f91a5",
+                    "categoryId": "3bef5406-6a50-5780-9022-ac10bd80cd99",
+                    "quantity": 1,
+                    "unitPrice": "45.00"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "body": {
+            "message": "Success.",
+            "data": {
+                "subtotal": "45.00",
+                "discount": "0.00",
+                "total": "45.00",
+                "strategy": "none"
+            }
+        }
+    }
+}

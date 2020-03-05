@@ -1,0 +1,22 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "not an uuid",
+            "products": "not an array"
+        }
+    },
+    "response": {
+        "statusCode": 422,
+        "body": {
+            "message": "The given data was invalid.",
+            "errors": {
+                "userEmail": [
+                    "The user email must be a valid email address."
+                ],
+                "products": [
+                    "The products must be an array."
+                ]
+            }
+        }
+    }
+}

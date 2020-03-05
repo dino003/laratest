@@ -1,0 +1,27 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "c4a760a8-dbcf-5254-a0d9-6a4474bd1b63",
+                    "categoryId": "563877aa-7121-5de4-9d53-10c0ea68ca37",
+                    "quantity": 3,
+                    "unitPrice": "420.01"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "body": {
+            "message": "Success.",
+            "data": {
+                "subtotal": "1260.03",
+                "discount": "0.00",
+                "total": "1260.03",
+                "strategy": "none"
+            }
+        }
+    }
+}

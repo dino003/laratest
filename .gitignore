@@ -1,0 +1,9 @@
+/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.phpcs-cache
+.phpunit.result.cache
+*.log

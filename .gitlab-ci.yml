@@ -1,0 +1,20 @@
+image: docker
+
+services:
+  - docker:dind
+
+before_script:
+  - apk add --no-cache --no-progress docker-compose
+
+tests:
+  cache:
+    paths:
+    - vendor
+  script:
+  - docker-compose up -d
+  - docker-compose exec -T web composer setup-ci
+  - docker-compose exec -T web vendor/bin/phpcs
+  - docker-compose exec -T web vendor/bin/phpstan analyse --no-progress
+  - docker-compose exec -T web vendor/bin/grumphp run --tasks=yamllint
+  - docker-compose exec -T web vendor/bin/phpunit -c phpunit.xml.dist
+  - docker-compose exec -T web vendor/bin/grumphp run --tasks=clover_coverage

@@ -1,0 +1,23 @@
+parameters:
+  git_hook_variables:
+    EXEC_GRUMPHP_COMMAND: 'docker-compose exec -e COLUMNS=$COLUMNS -e LINES=$LINES -e TERM=$TERM -T web php'
+  stop_on_failure: true
+  tasks:
+    clover_coverage:
+      clover_file: build/logs/clover.xml
+      level: 100
+    composer: ~
+    phpcs:
+      metadata:
+        priority: 2
+    phpstan:
+      metadata:
+        priority: 2
+    phpunit:
+      always_execute: true
+      config_file: phpunit.xml.dist
+      metadata:
+        priority: 1
+    yamllint:
+     whitelist_patterns:
+       - resources/views/documentation.yml

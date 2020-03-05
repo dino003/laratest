@@ -1,0 +1,33 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "e12da78a-49eb-59ae-b0a1-b365936bf7b3",
+                    "categoryId": "dd88b3ce-2686-55be-92ce-f8ef616f0305",
+                    "quantity": 1,
+                    "unitPrice": "399.99"
+                },
+                {
+                    "id": "5472ec46-d407-58c2-8f06-bcf7915571a1",
+                    "categoryId": "dd88b3ce-2686-55be-92ce-f8ef616f0305",
+                    "quantity": 1,
+                    "unitPrice": "100.00"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "body": {
+            "message": "Success.",
+            "data": {
+                "subtotal": "499.99",
+                "discount": "0.00",
+                "total": "499.99",
+                "strategy": "none"
+            }
+        }
+    }
+}

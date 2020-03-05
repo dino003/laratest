@@ -1,0 +1,27 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "b8be61e7-c170-5623-9ff7-00b2d83f91a5",
+                    "categoryId": "3bef5406-6a50-5780-9022-ac10bd80cd99",
+                    "quantity": 3,
+                    "unitPrice": "322.99"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "body": {
+            "message": "Success.",
+            "data": {
+                "subtotal": "968.97",
+                "discount": "322.99",
+                "total": "645.98",
+                "strategy": "take-3-pay-2"
+            }
+        }
+    }
+}

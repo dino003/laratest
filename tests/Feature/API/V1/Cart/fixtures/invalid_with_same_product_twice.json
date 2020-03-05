@@ -1,0 +1,35 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "c4a760a8-dbcf-5254-a0d9-6a4474bd1b63",
+                    "categoryId": "3bef5406-6a50-5780-9022-ac10bd80cd99",
+                    "quantity": 1,
+                    "unitPrice": "10.00"
+                },
+                {
+                    "id": "c4a760a8-dbcf-5254-a0d9-6a4474bd1b63",
+                    "categoryId": "3bef5406-6a50-5780-9022-ac10bd80ce00",
+                    "quantity": 2,
+                    "unitPrice": "10.00"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 422,
+        "body": {
+            "message": "The given data was invalid.",
+            "errors": {
+                "products.0.id": [
+                    "The products.0.id field has a duplicate value."
+                ],
+                "products.1.id": [
+                    "The products.1.id field has a duplicate value."
+                ]
+            }
+        }
+    }
+}

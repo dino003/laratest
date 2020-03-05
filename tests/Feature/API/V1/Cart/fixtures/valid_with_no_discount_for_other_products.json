@@ -1,0 +1,45 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "2e5851ad-5b3b-5e3f-a18b-3996f17cf3af",
+                    "categoryId": "41c7996a-7d87-5e13-9191-ca9f93f085c4",
+                    "quantity": 1,
+                    "unitPrice": "200.00"
+                },
+                {
+                    "id": "42d67fe8-ff5b-5c0c-a802-cc2cc713acf0",
+                    "categoryId": "d5bb88bc-101d-5021-80c7-82c6064b9aba",
+                    "quantity": 1,
+                    "unitPrice": "200.00"
+                },
+                {
+                    "id": "ee70a8dd-f8a5-53bb-b5fd-a7bf97c9290c",
+                    "categoryId": "b628a839-e43a-527d-9254-e7f6793d4cf4",
+                    "quantity": 2,
+                    "unitPrice": "200.00"
+                },
+                {
+                    "id": "9be0ed6a-ee9a-53a3-8dce-68289c51f291",
+                    "categoryId": "108dd061-e26a-592d-96b2-84663e26b44e",
+                    "quantity": 1,
+                    "unitPrice": "200.00"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 200,
+        "body": {
+            "message": "Success.",
+            "data": {
+                "subtotal": "1000.00",
+                "discount": "0.00",
+                "total": "1000.00",
+                "strategy": "none"
+            }
+        }
+    }
+}

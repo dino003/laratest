@@ -1,0 +1,35 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                {
+                    "id": "not an uuid",
+                    "categoryId": "not an uuid",
+                    "quantity": "not an integer",
+                    "unitPrice": "not a money"
+                }
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 422,
+        "body": {
+            "message": "The given data was invalid.",
+            "errors": {
+                "products.0.id": [
+                    "The products.0.id must be a valid UUID."
+                ],
+                "products.0.categoryId": [
+                    "The products.0.categoryId must be a valid UUID."
+                ],
+                "products.0.quantity": [
+                    "The products.0.quantity must be an integer."
+                ],
+                "products.0.unitPrice": [
+                    "The products.0.unitPrice must be a valid money."
+                ]
+            }
+        }
+    }
+}

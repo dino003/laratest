@@ -1,0 +1,30 @@
+{
+    "request": {
+        "body": {
+            "userEmail": "johndoe@pm.me",
+            "products": [
+                []
+            ]
+        }
+    },
+    "response": {
+        "statusCode": 422,
+        "body": {
+            "message": "The given data was invalid.",
+            "errors": {
+                "products.0.id": [
+                    "The products.0.id field is required."
+                ],
+                "products.0.categoryId": [
+                    "The products.0.categoryId field is required."
+                ],
+                "products.0.quantity": [
+                    "The products.0.quantity field is required."
+                ],
+                "products.0.unitPrice": [
+                    "The products.0.unitPrice field is required."
+                ]
+            }
+        }
+    }
+}

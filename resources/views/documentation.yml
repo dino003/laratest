@@ -1,0 +1,189 @@
+openapi: 3.0.1
+servers:
+  - url: /api/v1
+info:
+  description: |
+    Interact with Backend Test API.
+  version: 1.0.0
+  title: Backend Test API
+tags:
+  - name: Cart
+    description: Manage customer cart
+  - name: User
+    description: Manage users
+paths:
+  /cart/discount:
+    post:
+      summary: Calculate discount for Cart
+      description: Calculate cart total value and discount prices.
+      operationId: discountCalculator
+      requestBody:
+        description: Cart fields
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      responses:
+        '200':
+          $ref: '#/components/responses/DiscountData'
+      tags:
+        - Cart
+  /user/{email}:
+    get:
+      summary: User information
+      description: Retrieve information about the User.
+      operationId: userInfo
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: User Email.
+          schema:
+            $ref: '#/components/schemas/Email'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserData'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+      tags:
+        - User
+components:
+  schemas:
+    Cart:
+      type: object
+      required:
+        - userEmail
+        - products
+      properties:
+        userEmail:
+          $ref: '#/components/schemas/Email'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    Discount:
+      type: object
+      required:
+        - subtotal
+        - discount
+        - total
+      properties:
+        subtotal:
+          type: string
+          format: currency
+          description: Sum of all product prices.
+          example: '1200.03'
+        discount:
+          type: string
+          format: currency
+          description: Discount applied to Cart.
+          example: '400.01'
+        total:
+          type: string
+          format: currency
+          description: Sum of all product prices, minus the discount. The final price that the user should pay.
+          example: '800.02'
+        strategy:
+          type: string
+          enum: ['none', 'new-user', 'employee', 'above-3000', 'take-3-pay-2', 'same-category']
+          description: Discount strategy applied to Cart.
+          example: 'take-3-pay-2'
+    Product:
+      type: object
+      required:
+        - id
+        - categoryId
+        - quantity
+        - unitPrice
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        categoryId:
+          $ref: '#/components/schemas/UUID'
+        quantity:
+          type: integer
+          description: Product amount on cart.
+          example: 3
+        unitPrice:
+          type: string
+          format: currency
+          description: Price for a single product unit.
+          example: '400.01'
+    UserInfo:
+      type: object
+      required:
+        - email
+        - isEmployee
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        isEmployee:
+          type: boolean
+          description: Whether given user is an employee.
+          example: false
+    UUID:
+      type: string
+      format: uuid
+      description: RFC 4122 version 5 UUID.
+      example: 'c4a760a8-dbcf-5254-a0d9-6a4474bd1b62'
+    Email:
+      type: string
+      format: email
+      description: User email.
+      example: 'johndoe@pm.me'
+  responses:
+    DiscountData:
+      description: The Discount information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Insight about operation.
+                example: Success.
+              data:
+                $ref: '#/components/schemas/Discount'
+    UserData:
+      description: The User information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Insight about operation.
+                example: Success.
+              data:
+                $ref: '#/components/schemas/UserInfo'
+    UserNotFound:
+      description: User Not Found.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: User-friendly Error message.
+                example: Not Found.
+    UnexpectedError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                description: User-friendly Error message.
+                example: Internal server error.
