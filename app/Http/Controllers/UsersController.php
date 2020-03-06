@@ -5,6 +5,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\ValidationException;
 
+
 class UsersController extends Controller
 {
     public function information(Factory $validator, string $email): JsonResponse

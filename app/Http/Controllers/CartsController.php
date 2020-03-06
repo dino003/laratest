@@ -3,9 +3,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CartDiscountRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Route;
 use Money\Money;
 use Money\MoneyFormatter;
 use Money\MoneyParser;
+use Illuminate\Http\Request;
 
 class CartsController extends Controller
 {
@@ -19,12 +21,26 @@ class CartsController extends Controller
         // Think about responsibilities, testing and code clarity.
 
         $subtotal = Money::BRL(0);
-        $discount = Money::BRL(0);
+      //  $discount = Money::BRL(0);
 
-        $quantity = 0;
+     //   $quantity = 0;
+        $producCate = "";
+        $nbrProductSameCate = 1;
+        $tableauDesPrix = [];
+
         foreach ($request->get('products') as $product) {
             $unitPrice = $moneyParser->parse($product['unitPrice'], 'BRL');
             $amount = $unitPrice->multiply($product['quantity']);
+            if($product['categoryId'] == $producCate) {
+                $nbrProductSameCate  += 1;
+              //  array_push($tableauDesPrix, substr($product['unitPrice'], 0, -2) );
+                array_push($tableauDesPrix, $product['unitPrice']);
+            }else{
+                $producCate = $product['categoryId'];
+
+            }
+
+
            // $amount = $unitPrice->multiply($this->quantityToBy($product['quantity']));
            // dd($this->isMultipleOf3($product['quantity']) );
           //  $discount = $discount->add($unitPrice->multiply($this->quantityToDiscount($product['quantity'])) );
@@ -34,13 +50,49 @@ class CartsController extends Controller
            // $discount = Money::BRL($this->availableDiscount($subtotal,$product['quantity'])) ;
            // dd($discount);
         }
-          //  dd($request->get('products'));
+
+        $discount = 0;
+        $strategy = 'none';
+       // dd($strategy);
+
+        if($nbrProductSameCate > 1) {
+
+            if(count(array_unique($tableauDesPrix)) == 1) {
+                $prixMinimum = floatval($tableauDesPrix[0]);
+
+                floatval($discount = ($prixMinimum * 4000) / 100);
+               // dd($discount);
+
+            }
+            else{
+              //  dd('ok');
+                $prixMinimum = floatval(min($tableauDesPrix));
+              //  dd($prixMinimum);
+                $discount = ($prixMinimum * 4000) / 100;
+            }
+
+
+
+            $strategy = 'same-category';
+        }
+
+       // $req = Request::create('/api/v1/user/boitata@boitata.com', 'GET');
+       // $response1 = Route::dispatch($req);
+       // $resp = $response1->getOriginalContent();
+
+       // dd(response()->json($resp));
+      //  dd(new JsonResponse($resp));
+     //   dd($response1);
+
+        //  dd($request->get('products'));
         //dd($quantity);
 
-        $discount = Money::BRL($this->availableDiscount($subtotal ));
+      //  $discount = Money::BRL($this->availableDiscount($subtotal ));
       //  $discount = $discount->add("0");
+
+
+        $discount = Money::BRL($discount);
         $total = $subtotal->subtract($discount);
-        $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
 
        // dd($this->quantityToBy(4) );
         return new JsonResponse(
