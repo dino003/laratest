@@ -37,7 +37,7 @@ class CartsController extends Controller
       //  $strategy = 'none';
        // $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
         $strategy = 'take-3-pay-2';
-       // dd($this->quantityToBy(4) );
+
         return new JsonResponse(
             [
                 'message' => 'Success.',

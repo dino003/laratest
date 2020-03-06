@@ -49,7 +49,7 @@ class CartDiscountTest extends TestCase
       //  yield from $this->getFixture('valid_with_discount_for_same_category_same_price');
 //        yield from $this->getFixture('valid_with_discount_for_employee');
 //        yield from $this->getFixture('valid_with_discount_for_new_customer');
-//        yield from $this->getFixture('valid_with_only_the_biggest_discount');
+        yield from $this->getFixture('valid_with_only_the_biggest_discount');
     }
 
     private function getFixture(string $name): array
