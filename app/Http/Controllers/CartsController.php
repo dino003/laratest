@@ -85,9 +85,12 @@ class CartsController extends Controller
         return abs($quantity - $this->quantityToBy(($quantity)));
     }
 
-    private function getStrategy(?int $quantity) : string {
+    private function getStrategy(?int $quantity, ?Money $subtotal) : string {
+        $valueToCompareForAbove3000 = Money::BRL(300000);
         if($this->isMultipleOf3($quantity)) {
             return 'take-3-pay-2';
+        }elseif ($subtotal->greaterThanOrEqual($valueToCompareForAbove3000)) {
+            return 'above-3000';
         }
 
     }
