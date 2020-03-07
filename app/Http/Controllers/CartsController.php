@@ -116,24 +116,24 @@ class CartsController extends Controller
         // // dd($codeType);
         // // dd($code);
 
-        // if ($code === 200) {
-        //     $isEmployee = $user['data']['isEmployee'];
-        //     if ($isEmployee === true) {
-        //         $discount = $subtotal->multiply(20);
-        //         $discount = $discount->divide(100);
-        //         $strategy = 'employee';
-        //     }
-        // } elseif ($code === 404) {
-        //     // $discount = Money::BRL(25);
-        //     // $strategy = 'new-user';
-        //     if ($subtotal->greaterThan($firstPurchaseMin)) {
-        //         $discount = Money::BRL(2500);
-        //         $strategy = 'new-user';
-        //     }
-        // }
+        if ($code === 200) {
+            $isEmployee = $user['data']['isEmployee'];
+            if ($isEmployee === true) {
+                $discount = $subtotal->multiply(20);
+                $discount = $discount->divide(100);
+                $strategy = 'employee';
+            }
+        } elseif ($code === 404) {
+            // $discount = Money::BRL(25);
+            // $strategy = 'new-user';
+            if ($subtotal->greaterThan($firstPurchaseMin)) {
+                $discount = Money::BRL(2500);
+                $strategy = 'new-user';
+            }
+        }
 
         // dd($discount);
-        dd($quantity);
+        // dd($quantity);
         // dd($subtotal);
         // dd($productId);
         // dd($productCategory);
@@ -141,9 +141,9 @@ class CartsController extends Controller
         // dd('ok');
         // dd($this->getDiscount($quantity, $subtotal, $productId, $productCategory, $userEmail, $productlist));
 
-        $discount = $discount->add($this->getDiscount($quantity, $subtotal, $productId, $productCategory, $userEmail, $productlist));
+        // $discount = $discount->add($this->getDiscount($quantity, $subtotal, $productId, $productCategory, $userEmail, $productlist));
 
-        dd($discount);
+        // dd($discount);
 
         // dd($discount);
 
@@ -156,7 +156,7 @@ class CartsController extends Controller
                     'subtotal' => $moneyFormatter->format($subtotal),
                     'discount' => $moneyFormatter->format($discount),
                     'total' => $moneyFormatter->format($total),
-                    'strategy' => $this->getStrategy($quantity, $subtotal, $productId, $productCategory, $userEmail),
+                    'strategy' => $strategy,
                 ],
             ]
         );
