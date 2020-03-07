@@ -25,15 +25,14 @@ class CartsController extends Controller
             $amount = $unitPrice->multiply($product['quantity']);
 
             $subtotal = $subtotal->add($amount);
-         ;
+
         }
 
 
         $discount = $this->availableDiscount($subtotal );
 
         $total = $subtotal->subtract($discount);
-       // $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
-      //  dd($this->getStrategy($subtotal));
+
         return new JsonResponse(
             [
                 'message' => 'Success.',
