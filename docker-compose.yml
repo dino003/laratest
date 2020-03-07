@@ -4,6 +4,6 @@ services:
   web:
     image: leroymerlinbr/php:backend-challenge
     ports:
-      - "90:90"
+      - "90:80"
     volumes:
       - .:/var/www/html
