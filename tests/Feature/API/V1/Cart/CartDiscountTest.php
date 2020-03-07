@@ -36,10 +36,10 @@ class CartDiscountTest extends TestCase
         // These ones you need to make pass.
         // Uncomment the lines, one by one, so that it's easier to implement :)
 
-        // yield from $this->getFixture('valid_with_no_discount');
-        // yield from $this->getFixture('valid_with_no_discount_for_other_category');
-        // yield from $this->getFixture('valid_with_no_discount_for_other_products');
-        // yield from $this->getFixture('valid_with_no_discount_for_new_customer_when_below_50');
+        yield from $this->getFixture('valid_with_no_discount');
+        yield from $this->getFixture('valid_with_no_discount_for_other_category');
+        yield from $this->getFixture('valid_with_no_discount_for_other_products');
+        yield from $this->getFixture('valid_with_no_discount_for_new_customer_when_below_50');
 
         yield from $this->getFixture('valid_with_discount_above_3000');
         // yield from $this->getFixture('valid_with_discount_take_3_pay_2');

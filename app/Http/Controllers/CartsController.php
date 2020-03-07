@@ -133,10 +133,19 @@ class CartsController extends Controller
         // }
 
         // dd($discount);
+        dd($quantity);
+        // dd($subtotal);
+        // dd($productId);
+        // dd($productCategory);
+        // dd($userEmail);
+        // dd('ok');
+        // dd($this->getDiscount($quantity, $subtotal, $productId, $productCategory, $userEmail, $productlist));
 
         $discount = $discount->add($this->getDiscount($quantity, $subtotal, $productId, $productCategory, $userEmail, $productlist));
 
         dd($discount);
+
+        // dd($discount);
 
         $total = $subtotal->subtract($discount);
 
@@ -215,13 +224,15 @@ class CartsController extends Controller
         return config('api.promotional.categories')[0];
     }
 
-    public function getDiscount(int $quantity = null, Money $subtotal = null, string $productId = null, $productCategory = null, string $userEmail, array $productList = null)
+    public function getDiscount(int $quantity = null, Money $subtotal = null, string $productId = null, string $productCategory = null, string $userEmail = null, array $productList = null): Money
     {
-        $cartFromThreek = Money::BRL(3000);
+        // $cartFromThreek = Money::BRL(3000);
 
-        if ($this->getStrategy($subtotal) === 'above-3000') {
+        if ($this->getStrategy(null, $subtotal, null, null, null) === 'above-3000') {
+            $discount = $this->calculateFifteenPercentDiscount($subtotal);
 
-            $discount =  $this->calculateFifteenPercentDiscount($subtotal);
+            // dd($discount);
+            // dd($discount);
 
             return $discount;
             // if ($subtotal->greaterThanOrEqual($cartFromThreek)) {
@@ -235,32 +246,38 @@ class CartsController extends Controller
     //     // code...
     // }
 
-    private function getStrategy(int $quantity = null, Money $subtotal = null, string $productId = null, $productCategory = null, string $userEmail)
+    private function getStrategy(int $quantity = null, Money $subtotal = null, string $productId = null, string $productCategory = null, string $userEmail = null)
     {
-        $cartFromThreek = Money::BRL(3000);
+        $cartFromThreek = Money::BRL(300000);
 
-        dd($productId);
+        // dd($cartFromThreek);
+
+        // dd($productId);
 
         if ($subtotal->greaterThanOrEqual($cartFromThreek)) {
+            // dd($subtotal);
+
             return 'above-3000';
-        }
-
-        if ($this->isMultipleOfThree($quantity) && strcmp($productId, $this->getPromotionalTakeThreePayTwo()) === 0) {
-            return 'take-3-pay-2';
-        }
-
-        if (strcmp($productCategory, $this->getPromotionalCategories()) == 0) {
-            return 'same-category';
-        }
-
-        if ($this->checkIfUserExists($userEmail)) {
-            if ($this->checkIfUserIsCollaborator($userEmail)) {
-                return 'employee';
-            }
         } else {
-            return 'new-user';
+            return 'none';
         }
 
-        return 'none';
+        // if ($this->isMultipleOfThree($quantity) && strcmp($productId, $this->getPromotionalTakeThreePayTwo()) === 0) {
+        //     return 'take-3-pay-2';
+        // }
+
+        // if (strcmp($productCategory, $this->getPromotionalCategories()) == 0) {
+        //     return 'same-category';
+        // }
+
+        // if ($this->checkIfUserExists($userEmail)) {
+        //     if ($this->checkIfUserIsCollaborator($userEmail)) {
+        //         return 'employee';
+        //     }
+        // } else {
+        //     return 'new-user';
+        // }
+
+        // return 'none';
     }
 }
