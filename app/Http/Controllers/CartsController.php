@@ -23,19 +23,38 @@ class CartsController extends Controller
 
        // $quantity = 0;
        // $discount = 0;
+        $discount_array = array( array(), array() );
         foreach ($request->get('products') as $product) {
-            $unitPrice = $moneyParser->parse($product['unitPrice'], 'BRL');
-            $amount = $unitPrice->multiply($product['quantity']);
+            $quantity = $product['quantity'];
+            $productUnitPrice = $product['unitPrice'];
 
-            $discountAmount = $unitPrice->multiply($this->quantityToDiscount($product['quantity']));
-            $discount = $discount->add($discountAmount);
+            $unitPrice = $moneyParser->parse($productUnitPrice, 'BRL');
+          //  $hj = $moneyParser->
+           // dd( intval($unitPrice->getAmount()) );
+          //  dd( typeOf($unitPrice->getAmount()) );
+            $amount = $unitPrice->multiply($quantity);
+
+           // $discountAmount = $unitPrice->multiply($this->quantityToDiscount($quantity ));
+
             $subtotal = $subtotal->add($amount);
 
+           // dd($this->availableDiscount($quantity, $subtotal, $unitPrice ));
+           // $discount =  $discount->add($this->availableDiscount($quantity, $subtotal, $unitPrice ) );
+            $discValue = $this->availableDiscount($quantity, $subtotal, $unitPrice );
+           // dd($discValue[1][0]);
+
+            $intValueOfDiscount = intval($discValue[0][0]->getAmount() );
+          //  dd($intValueOfDiscount);
+
+            array_push($discount_array[0], $intValueOfDiscount );
+            array_push($discount_array[1], $discValue[1] );
+
         }
+         //   dd($quantity);
+        $discount = $discount->add(Money::BRL(max($discount_array[0])) );
 
         $total = $subtotal->subtract($discount);
       //  $strategy = 'none';
-       // $strategy =  substr($subtotal->getAmount(), 0, -2) >= 3000 ?  'above-3000' : 'none';
         $strategy = 'take-3-pay-2';
 
         return new JsonResponse(
@@ -53,14 +72,45 @@ class CartsController extends Controller
 
     /* check if is discountable */
 
-    private function availableDiscount( $subtotal) {
+    private function availableDiscount(?int $quantity = null, Money $subtotal, ?Money $unitPrice) : array {
 
-                $integerValueOfAmount =  substr($subtotal->getAmount(), 0, -2);
+        $outPut_array = array( array(), array() );
 
-                if(intval($integerValueOfAmount) >= intval(3000)) return $discount =   45000;
+        $integerValueOfAmount = Money::BRL(300000);
+        $discount = Money::BRL(0);
 
-                   return $discount = 0;
+        if($subtotal->greaterThanOrEqual($integerValueOfAmount) ) {
+            if(!$this->isMultipleOf3($quantity) ) {
+                $dis = $subtotal->multiply(15);
+                $discountForAbove3000 = $dis->divide(100);
 
+                $discount =  $discount->add($discountForAbove3000);
+                array_push($outPut_array[0], $discount);
+                array_push($outPut_array[1], 'above-3000');
+
+            }else {
+                $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+                array_push($outPut_array[0], $discount);
+                array_push($outPut_array[1], 'take-3-pay-2');
+            }
+
+           // dd($discount);
+        }elseif ($unitPrice && $quantity && $this->isMultipleOf3($quantity)) {
+            $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+            array_push($outPut_array[0], $discount);
+            array_push($outPut_array[1], 'take-3-pay-2');
+
+
+        }
+
+       // dd($discount);
+       // return $discount;
+        return $outPut_array;
+
+    }
+
+    private function getDiscountWhenStrategieIsTake3Pay2(Money $unitPrice, int $quantity) {
+       return $discountForTake3Pay2 = $unitPrice->multiply($this->quantityToDiscount($quantity));
     }
 
     /* check if is multiple of 3 */
@@ -85,15 +135,21 @@ class CartsController extends Controller
         return abs($quantity - $this->quantityToBy(($quantity)));
     }
 
-    private function getStrategy(?int $quantity, ?Money $subtotal) : string {
+    private function getStrategy(?int $quantity = null, ?Money $subtotal) : string {
         $valueToCompareForAbove3000 = Money::BRL(300000);
-        if($this->isMultipleOf3($quantity)) {
+        if($quantity && $this->isMultipleOf3($quantity) ) {
             return 'take-3-pay-2';
-        }elseif ($subtotal->greaterThanOrEqual($valueToCompareForAbove3000)) {
+        }
+        elseif ($subtotal->greaterThanOrEqual($valueToCompareForAbove3000)) {
             return 'above-3000';
+        }else {
+            return 'none';
         }
 
     }
+
+
+
 
 
 
