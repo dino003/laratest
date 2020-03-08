@@ -36,19 +36,19 @@ class CartDiscountTest extends TestCase
         // These ones you need to make pass.
         // Uncomment the lines, one by one, so that it's easier to implement :)
 
-       // yield from $this->getFixture('valid_with_no_discount');
-      //  yield from $this->getFixture('valid_with_no_discount_for_other_category');
-       // yield from $this->getFixture('valid_with_no_discount_for_other_products');
-      //  yield from $this->getFixture('valid_with_no_discount_for_new_customer_when_below_50');
+        yield from $this->getFixture('valid_with_no_discount');
+        yield from $this->getFixture('valid_with_no_discount_for_other_category');
+        yield from $this->getFixture('valid_with_no_discount_for_other_products');
+        yield from $this->getFixture('valid_with_no_discount_for_new_customer_when_below_50');
 
 
-       // yield from $this->getFixture('valid_with_discount_above_3000');
+        yield from $this->getFixture('valid_with_discount_above_3000');
        yield from $this->getFixture('valid_with_discount_take_3_pay_2');
-      yield from $this->getFixture('valid_with_discount_take_3_pay_2_multiple_times');
-       // yield from $this->getFixture('valid_with_discount_for_same_category');
-      //  yield from $this->getFixture('valid_with_discount_for_same_category_same_price');
-//        yield from $this->getFixture('valid_with_discount_for_employee');
-//        yield from $this->getFixture('valid_with_discount_for_new_customer');
+         yield from $this->getFixture('valid_with_discount_take_3_pay_2_multiple_times');
+        yield from $this->getFixture('valid_with_discount_for_same_category');
+        yield from $this->getFixture('valid_with_discount_for_same_category_same_price');
+      yield from $this->getFixture('valid_with_discount_for_employee');
+       yield from $this->getFixture('valid_with_discount_for_new_customer');
         yield from $this->getFixture('valid_with_only_the_biggest_discount');
     }
 

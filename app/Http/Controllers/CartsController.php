@@ -6,6 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Money\Money;
 use Money\MoneyFormatter;
 use Money\MoneyParser;
+use Symfony\Component\HttpFoundation\Request;
+
 
 class CartsController extends Controller
 {
@@ -17,41 +19,27 @@ class CartsController extends Controller
         // Your logic goes here, use the code below just as a guidance.
         // You can do whatever you want with this code, even delete it.
         // Think about responsibilities, testing and code clarity.
+      //  dd($this->getPromotionalTakeThreePayTwo());
+
 
         $subtotal = Money::BRL(0);
-        $discount = Money::BRL(0);
 
-       // $quantity = 0;
-       // $discount = 0;
-        $discount_array = array( array(), array() );
+        $discount_array = [];
         foreach ($request->get('products') as $product) {
             $quantity = $product['quantity'];
             $productUnitPrice = $product['unitPrice'];
 
             $unitPrice = $moneyParser->parse($productUnitPrice, 'BRL');
-          //  $hj = $moneyParser->
-           // dd( intval($unitPrice->getAmount()) );
-          //  dd( typeOf($unitPrice->getAmount()) );
-            $amount = $unitPrice->multiply($quantity);
 
-           // $discountAmount = $unitPrice->multiply($this->quantityToDiscount($quantity ));
+            $amount = $unitPrice->multiply($quantity);
 
             $subtotal = $subtotal->add($amount);
 
-           // dd($this->availableDiscount($quantity, $subtotal, $unitPrice ));
-           // $discount =  $discount->add($this->availableDiscount($quantity, $subtotal, $unitPrice ) );
-            $discValue = $this->availableDiscount($quantity, $subtotal, $unitPrice );
-           // dd($discValue[1][0]);
-
-            $intValueOfDiscount = intval($discValue[0][0]->getAmount() );
-          //  dd($intValueOfDiscount);
-
-            array_push($discount_array[0], $intValueOfDiscount );
-            array_push($discount_array[1], $discValue[1] );
+            $discValue = $this->availableDiscount($moneyParser, $subtotal, $quantity, $unitPrice, $product['id'], $product['categoryId'], $request );
+            array_push($discount_array, $discValue);
 
         }
-         //   dd($quantity);
-        $discount = $discount->add(Money::BRL(max($discount_array[0])) );
+        $discount = Money::max(...$discount_array);
 
         $total = $subtotal->subtract($discount);
       //  $strategy = 'none';
@@ -64,7 +52,7 @@ class CartsController extends Controller
                     'subtotal' => $moneyFormatter->format($subtotal),
                     'discount' => $moneyFormatter->format($discount),
                     'total' => $moneyFormatter->format($total),
-                    'strategy' => $strategy,
+                   // 'strategy' => $strategy,
                 ],
             ]
         );
@@ -72,40 +60,82 @@ class CartsController extends Controller
 
     /* check if is discountable */
 
-    private function availableDiscount(?int $quantity = null, Money $subtotal, ?Money $unitPrice) : array {
+    private function availableDiscount(MoneyParser $moneyParser, Money $subtotal, ?int $quantity = null, ?Money $unitPrice = null, ?string $product_id, ?string $product_category,  ?CartDiscountRequest $request) : Money {
 
-        $outPut_array = array( array(), array() );
+        $userEmail = $request->get('userEmail');
+        $requested = Request::create('/api/v1/user/'.$userEmail, 'GET');
+        $response = app()->handle($requested);
+        $user = $response->getOriginalContent();
+        $code = $response->getStatusCode();
+        //dd($code);
+       // dd($this->isUserExist($code));
 
+       // $codeType = gettype($code);
         $integerValueOfAmount = Money::BRL(300000);
         $discount = Money::BRL(0);
 
         if($subtotal->greaterThanOrEqual($integerValueOfAmount) ) {
             if(!$this->isMultipleOf3($quantity) ) {
-                $dis = $subtotal->multiply(15);
-                $discountForAbove3000 = $dis->divide(100);
-
-                $discount =  $discount->add($discountForAbove3000);
-                array_push($outPut_array[0], $discount);
-                array_push($outPut_array[1], 'above-3000');
-
+                $discount = $this->getFiftyPercentage($subtotal);
             }else {
-                $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
-                array_push($outPut_array[0], $discount);
-                array_push($outPut_array[1], 'take-3-pay-2');
+                if($this->isPromotionalProductForTakeThreePayTwo($product_id)) {
+                    $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+                }else {
+                    $discount = $this->getFiftyPercentage($subtotal);
+
+                }
             }
 
-           // dd($discount);
         }elseif ($unitPrice && $quantity && $this->isMultipleOf3($quantity)) {
-            $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
-            array_push($outPut_array[0], $discount);
-            array_push($outPut_array[1], 'take-3-pay-2');
+            if($this->isPromotionalProductForTakeThreePayTwo($product_id)) {
+                $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+            }
+        }elseif ($this->isPromotionalCategory($product_category)) {
+            $producCate = "";
+            $nbrProductSameCate = 1;
+            $tableauDesPrix = [];
+            $tableauDesPrixStrings = [];
+            foreach ($request->get('products') as $product) {
+                array_push($tableauDesPrix, $moneyParser->parse($product['unitPrice'], 'BRL'));
+                array_push($tableauDesPrixStrings, $product['unitPrice']);
 
+                if($product_category == $producCate) {
+                    $nbrProductSameCate  += 1;
+
+                }else{
+                  //  array_push($tableauDesPrix, $product['unitPrice']);
+
+                    $producCate  = $product['categoryId'];
+
+                }
+            }
+
+
+            if($nbrProductSameCate > 1) {
+               if(count(array_unique($tableauDesPrixStrings)) == 1) {
+                   $discount = $this->getFourtyPercent($tableauDesPrix[0]);
+
+               }
+               else{
+                   $discount = $this->getFourtyPercent(Money::min(...$tableauDesPrix));
+               }
+           }
+
+        }elseif ($this->isUserExist($code) ) {
+            if($this->isUserCollaborator($user)) {
+                $discount = $this->getTwentyPercent($subtotal);
+            }
+
+        }elseif (!$this->isUserExist($code) && $code === 404) {
+          $mininumAmountForNewCustomer = Money::BRL(5000);
+          $fixedDiscount = Money::BRL(2500);
+          if($subtotal->greaterThan($mininumAmountForNewCustomer)) {
+              $discount = $discount->add($fixedDiscount);
+          }
 
         }
 
-       // dd($discount);
-       // return $discount;
-        return $outPut_array;
+        return $discount;
 
     }
 
@@ -146,6 +176,74 @@ class CartsController extends Controller
             return 'none';
         }
 
+    }
+
+    private function getStra(Money $subtotal, ?int $quantity = null, ?Money $unitPrice) : Money {
+
+
+        $integerValueOfAmount = Money::BRL(300000);
+        $discount = Money::BRL(0);
+
+        if($subtotal->greaterThanOrEqual($integerValueOfAmount) ) {
+            if(!$this->isMultipleOf3($quantity) ) {
+                $dis = $subtotal->multiply(15);
+                $discountForAbove3000 = $dis->divide(100);
+
+                $discount =  $discount->add($discountForAbove3000);
+
+
+            }else {
+                $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+
+            }
+
+        }elseif ($unitPrice && $quantity && $this->isMultipleOf3($quantity)) {
+            $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
+        }
+
+        return $discount;
+
+    }
+
+    private function isPromotionalProductForTakeThreePayTwo(string  $product_id) : bool
+    {
+        return in_array($product_id, config('api.promotional.products'));
+    }
+
+    private function isPromotionalCategory(string $product_category) : bool
+    {
+        return in_array($product_category, config('api.promotional.categories'));
+
+    }
+
+    private function getFiftyPercentage(Money $subtotal) : Money {
+        $dis = $subtotal->multiply(15);
+        return $dis->divide(100);
+
+    }
+
+    private function getFourtyPercent(Money $subtotal) : Money {
+        $dis = $subtotal->multiply(40);
+
+        return $dis->divide(100);
+
+    }
+
+    private function getTwentyPercent(Money $subtotal) : Money {
+        $dis = $subtotal->multiply(20);
+
+        return $dis->divide(100);
+
+    }
+
+    private function isUserExist(int $code) : bool
+    {
+        return $code === 200 ?: false;
+    }
+
+    private function isUserCollaborator(array $userData) : bool
+    {
+        return $userData['data']['isEmployee'] ?: false;
     }
 
 

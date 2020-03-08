@@ -19,8 +19,7 @@
             "data": {
                 "subtotal": "1000.00",
                 "discount": "200.00",
-                "total": "800.00",
-                "strategy": "employee"
+                "total": "800.00"
             }
         }
     }

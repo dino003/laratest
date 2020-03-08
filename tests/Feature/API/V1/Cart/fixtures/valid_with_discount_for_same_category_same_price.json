@@ -31,8 +31,7 @@
             "data": {
                 "subtotal": "1599.96",
                 "discount": "159.99",
-                "total": "1439.97",
-                "strategy": "same-category"
+                "total": "1439.97"
             }
         }
     }

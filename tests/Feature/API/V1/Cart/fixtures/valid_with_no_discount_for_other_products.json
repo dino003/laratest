@@ -37,8 +37,7 @@
             "data": {
                 "subtotal": "1000.00",
                 "discount": "0.00",
-                "total": "1000.00",
-                "strategy": "none"
+                "total": "1000.00"
             }
         }
     }
