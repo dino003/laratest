@@ -19,7 +19,9 @@
             "data": {
                 "subtotal": "100.00",
                 "discount": "25.00",
-                "total": "75.00"
+                "total": "75.00",
+                "strategy": "new-user"
+
             }
         }
     }

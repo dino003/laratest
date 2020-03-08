@@ -19,7 +19,9 @@
             "data": {
                 "subtotal": "968.97",
                 "discount": "322.99",
-                "total": "645.98"
+                "total": "645.98",
+                "strategy": "take-3-pay-2"
+
             }
         }
     }

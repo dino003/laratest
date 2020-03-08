@@ -19,7 +19,9 @@
             "data": {
                 "subtotal": "3000.00",
                 "discount": "450.00",
-                "total": "2550.00"
+                "total": "2550.00",
+                "strategy": "above-3000"
+
             }
         }
     }
