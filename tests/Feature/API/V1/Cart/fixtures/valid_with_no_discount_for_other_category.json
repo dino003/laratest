@@ -25,7 +25,8 @@
             "data": {
                 "subtotal": "499.99",
                 "discount": "0.00",
-                "total": "499.99"
+                "total": "499.99",
+                "strategy": "none"
             }
         }
     }

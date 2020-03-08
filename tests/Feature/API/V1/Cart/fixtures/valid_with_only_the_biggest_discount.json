@@ -31,7 +31,8 @@
             "data": {
                 "subtotal": "4750.00",
                 "discount": "1500.00",
-                "total": "3250.00"
+                "total": "3250.00",
+                "strategy": "take-3-pay-2"
             }
         }
     }
