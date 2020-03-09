@@ -24,7 +24,6 @@ class CartsController extends Controller
 
         $subtotal = Money::BRL(0);
 
-        $discount_array = [];
         foreach ($request->get('products') as $product) {
             $quantity = $product['quantity'];
             $productUnitPrice = $product['unitPrice'];
@@ -35,19 +34,10 @@ class CartsController extends Controller
 
             $subtotal = $subtotal->add($amount);
 
-            $discValue = $this->availableDiscount($moneyParser, $subtotal, $quantity, $unitPrice, $product['id'], $product['categoryId'], $request, $moneyFormatter );
-           // array_push($discount_array, $discValue['discount']);
-            $discountFinal = $this->checkBiggestDiscountBeforePushInArray($discValue['discount'], $discValue['strategy'], $discount_array);
-
         }
-       //  dd($discountFinal);
 
-        // dd($discountFinal);
-        //  $discount = Money::max(...$discount_array);
-        $discount = $discountFinal['discount'];
-
-        $strategy = $discountFinal['strategy'];
-       // dd($discValue);
+       $discount = $this->discountable($request, $subtotal, $moneyParser, $moneyFormatter)['discount'];
+        $strategy = $this->discountable($request, $subtotal, $moneyParser, $moneyFormatter)['strategy'];
 
         $total = $subtotal->subtract($discount);
 
@@ -64,110 +54,6 @@ class CartsController extends Controller
         );
     }
 
-    /* check if is discountable */
-
-    private function availableDiscount(MoneyParser $moneyParser, Money $subtotal, ?int $quantity = null, ?Money $unitPrice = null, ?string $product_id, ?string $product_category,  ?CartDiscountRequest $request, MoneyFormatter $moneyFormatter) : array {
-
-        $userEmail = $request->get('userEmail');
-        $requested = Request::create('/api/v1/user/'.$userEmail, 'GET');
-        $response = app()->handle($requested);
-        $user = $response->getOriginalContent();
-        $code = $response->getStatusCode();
-
-        $integerValueOfAmount = Money::BRL(300000);
-        $discount = Money::BRL(0);
-        $strategy = 'none';
-        $result = array("discount" => $discount, "strategy" => $strategy);
-
-        if($subtotal->greaterThanOrEqual($integerValueOfAmount) ) {
-                foreach ($request->get('products') as $key => $product) {
-                    if(!$this->isMultipleOf3($product['quantity']) ) {
-                        // dd($unitPrice);
-                        $discount = $this->getFiftyPercentage($subtotal);
-                        $result = array("discount" => $discount, "strategy" => 'above-3000');
-                        // dd($result);
-                    }else {
-                        if($this->isPromotionalProductForTakeThreePayTwo($product['id'])) {
-                           // dd($product['quantity']);
-                            $discount1 =  $this->getDiscountWhenStrategieIsTake3Pay2($moneyParser->parse($product['unitPrice'], 'BRL'), $product['quantity']);
-                          // dd($discount1);
-                            $disc2 = $this->getFiftyPercentage($subtotal);
-                           // dd($disc2);
-                            $discount = Money::max($discount1, $disc2);
-                           // dd($discount);
-                            $result = array("discount" => $discount, "strategy" => 'take-3-pay-2');
-                           // dd($result);
-                        }else {
-                            $discount = $this->getFiftyPercentage($subtotal);
-                            $result = array("discount" => $discount, "strategy" => 'above-3000');
-
-                        }
-                    }
-                }
-        }elseif ($unitPrice && $quantity && $this->isMultipleOf3($quantity)) {
-            if($this->isPromotionalProductForTakeThreePayTwo($product_id)) {
-                $discount =  $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity);
-                $result = array("discount" => $discount, "strategy" => 'take-3-pay-2');
-
-            }
-        }elseif ($this->isPromotionalCategory($product_category)) {
-            $producCate = "";
-            $nbrProductSameCate = 1;
-            $tableauDesPrix = [];
-            $tableauDesPrixStrings = [];
-            foreach ($request->get('products') as $product) {
-                array_push($tableauDesPrix, $moneyParser->parse($product['unitPrice'], 'BRL'));
-                array_push($tableauDesPrixStrings, $product['unitPrice']);
-
-                if($product_category == $producCate) {
-                    $nbrProductSameCate  += 1;
-
-                }else{
-                  //  array_push($tableauDesPrix, $product['unitPrice']);
-
-                    $producCate  = $product['categoryId'];
-
-                }
-            }
-
-
-            if($nbrProductSameCate > 1) {
-               if(count(array_unique($tableauDesPrixStrings)) == 1) {
-                   $discount = $this->getFourtyPercent($tableauDesPrix[0], $moneyFormatter, $moneyParser);
-                   $result = array("discount" => $discount, "strategy" => 'same-category');
-
-
-               }
-               else{
-                   $discount = $this->getFourtyPercent(Money::min(...$tableauDesPrix), $moneyFormatter, $moneyParser);
-                   $result = array("discount" => $discount, "strategy" => 'same-category');
-
-               }
-           }
-
-        }elseif ($this->isUserExist($code) ) {
-            if($this->isUserCollaborator($user)) {
-                $discount = $this->getTwentyPercent($subtotal);
-                $result = array("discount" => $discount, "strategy" => 'employee');
-
-            }
-
-        }elseif (!$this->isUserExist($code) && $code === 404) {
-          $mininumAmountForNewCustomer = Money::BRL(5000);
-          $fixedDiscount = Money::BRL(2500);
-          if($subtotal->greaterThan($mininumAmountForNewCustomer)) {
-              $discount = $discount->add($fixedDiscount);
-              $result = array("discount" => $discount, "strategy" => 'new-user');
-
-          }
-
-        }
-      //  dd($result);
-        //return $discount;
-       // dd($result);
-        return $result;
-
-    }
 
     private function getDiscountWhenStrategieIsTake3Pay2(Money $unitPrice, int $quantity) {
        return $discountForTake3Pay2 = $unitPrice->multiply($this->quantityToDiscount($quantity));
@@ -184,29 +70,12 @@ class CartsController extends Controller
 
          return $quantity;
 
-     /*    else if($quantity > 3) {
-
-        } */
 
 
     }
 
     private function quantityToDiscount(int $quantity) : int {
         return abs($quantity - $this->quantityToBy(($quantity)));
-    }
-
-
-
-    private function checkBiggestDiscountBeforePushInArray(Money $discount , string $strategy, array $disc_arr) : array {
-        if(empty($disc_arr)) {
-            $disc_arr = array("discount" => $discount, "strategy" => $strategy);
-        }else {
-            if($discount->greaterThan($disc_arr['discount'])) {
-                $disc_arr = array("discount" => $discount, "strategy" => $strategy);
-            }
-        }
-
-        return $disc_arr;
     }
 
 
@@ -229,9 +98,6 @@ class CartsController extends Controller
     }
 
     private function getFourtyPercent(Money $subtotal, MoneyFormatter $moneyFormatter, MoneyParser $moneyParser) : Money {
-       // $dis = $subtotal->multiply(40);
-
-       // return $dis->divide(100);
 
         $unitPrice = $moneyFormatter->format($subtotal);
 
@@ -260,29 +126,78 @@ class CartsController extends Controller
         return $userData['data']['isEmployee'] ?: false;
     }
 
-    private function discountable(CartDiscountRequest $request, Money $subtotal) {
-        $userEmail = $request->get('userEmail');
-        $requested = Request::create('/api/v1/user/'.$userEmail, 'GET');
-        $response = app()->handle($requested);
-        $user = $response->getOriginalContent();
-        $code = $response->getStatusCode();
-
-        $integerValueOfAmount = Money::BRL(300000);
+    private function discountable(CartDiscountRequest $request, Money $subtotal, MoneyParser $moneyParser, MoneyFormatter $moneyFormatter) {
+        $user_mail = $request->get('userEmail');
+        $userApiRequest = Request::create('/api/v1/user/'.$user_mail, 'GET');
+        $userApiResponse = app()->handle($userApiRequest);
+        $user = $userApiResponse->getOriginalContent();
+        $code = $userApiResponse->getStatusCode();
+        $above3000AmountToExeed = Money::BRL(300000);
         $discount = Money::BRL(0);
-        $strategy = 'none';
-
-        $result = array("discount" => $discount, "strategy" => $strategy );
+        $result = array();
+        $producCate = "";
+        $nbrProductSameCate = 1;
+        $tableauDesPrix = [];
+        $tableauDesPrixStrings = [];
 
         if($this->isUserExist($code)) { // when user exist
+            $product_list = $request->get('products');
             if($this->isUserCollaborator($user)) { // user is collaborator
-                $all_discount_available_for_this_user = array();
+                //$all_discount_available_for_this_user = array();
                 $discountForEmployeeCase = $this->getTwentyPercent($subtotal);
-                $result = array("discount" => $discount, "strategy" => 'employee');
-
-            }else { // user is not collaborator
-
+                array_push($result, array("discount" => $discountForEmployeeCase, "strategy" => "employee"));
+            }else {
+                $noDiscount = Money::BRL(0);
+                array_push($result, array("discount" => $noDiscount, "strategy" => "none"));
             }
 
+            foreach ($product_list as $key => $product) {
+                $quantity = $product['quantity'];
+                $productPrice = $product['unitPrice'];
+                $product_id = $product['id'];
+                $product_category = $product['categoryId'];
+                if($this->isMultipleOf3($quantity) && $this->isPromotionalProductForTakeThreePayTwo($product_id)) {
+                    $unitPrice = $moneyParser->parse($productPrice, 'BRL');
+                    $discountForTake3Pay2Case = $this->getDiscountWhenStrategieIsTake3Pay2($unitPrice, $quantity );
+                    array_push($result, array("discount" => $discountForTake3Pay2Case, "strategy" => "take-3-pay-2"));
+
+                }
+
+                if($this->isPromotionalCategory($product_category)) {
+
+                    array_push($tableauDesPrix, $moneyParser->parse($productPrice, 'BRL'));
+                    array_push($tableauDesPrixStrings, $productPrice);
+
+                    if($product_category == $producCate) {
+                        $nbrProductSameCate  += 1;
+
+                    }else{
+                        $producCate  = $product_category;
+
+                    }
+                }
+
+                if($subtotal->greaterThanOrEqual($above3000AmountToExeed)) {
+                    $discountForAbove3000 = $this->getFiftyPercentage($subtotal);
+                    array_push($result, array("discount" => $discountForAbove3000, "strategy" => "above-3000"));
+
+
+                }
+            }
+
+            if($nbrProductSameCate > 1) {
+                if(count(array_unique($tableauDesPrixStrings)) == 1) {
+
+                    $disCountForSameCategorySamePrice = $this->getFourtyPercent($tableauDesPrix[0], $moneyFormatter, $moneyParser);
+                    array_push($result, array("discount" => $disCountForSameCategorySamePrice, "strategy" => "same-category"));
+
+                }
+                else{
+                    $discountForSameCategoryChepeast = $this->getFourtyPercent(Money::min(...$tableauDesPrix), $moneyFormatter, $moneyParser);
+                    array_push($result, array("discount" => $discountForSameCategoryChepeast, "strategy" => "same-category"));
+
+                }
+            }
 
         }else { //when user does not exist
             //user is new customer
@@ -290,22 +205,25 @@ class CartsController extends Controller
             $minimumSubtotalToGetdiscount = Money::BRL(5000);
             if($subtotal->greaterThan($minimumSubtotalToGetdiscount)) {
                 $discount = $discount->add($fixedDiscountForNewUser);
-                $result = array("discount" => $discount, "strategy" => 'new-user');
+                array_push($result, array("discount" => $discount, "strategy" => "new-user"));
+
             }else {
-                $result = array("discount" => $discount, "strategy" => $strategy );
+                $noDiscount = Money::BRL(0);
+                array_push($result, array("discount" => $noDiscount, "strategy" => "none"));
 
             }
-
-
         }
 
-        return $result;
+        $onlyDiscountArray = array();
+        foreach ($result as  $res) {
+            array_push($onlyDiscountArray, $res['discount']);
+        }
+        $biggestDiscount = Money::max(...$onlyDiscountArray);
+
+        $findBiggestDiscountInOriginalArray = array_search($biggestDiscount, array_column($result, 'discount'));
+       return $discountWithStrategyPair = $result[$findBiggestDiscountInOriginalArray];
 
     }
-
-
-
-
 
 
 
