@@ -36,8 +36,8 @@ class CartsController extends Controller
 
         }
 
-       $discount = $this->discountable($request, $subtotal, $moneyParser, $moneyFormatter)['discount'];
-        $strategy = $this->discountable($request, $subtotal, $moneyParser, $moneyFormatter)['strategy'];
+       $discount = $this->getDiscountWithStrategyPair($request, $subtotal, $moneyParser, $moneyFormatter)['discount'];
+        $strategy = $this->getDiscountWithStrategyPair($request, $subtotal, $moneyParser, $moneyFormatter)['strategy'];
 
         $total = $subtotal->subtract($discount);
 
@@ -126,7 +126,12 @@ class CartsController extends Controller
         return $userData['data']['isEmployee'] ?: false;
     }
 
-    private function discountable(CartDiscountRequest $request, Money $subtotal, MoneyParser $moneyParser, MoneyFormatter $moneyFormatter) {
+    private function noDiscountCase() : array {
+        $noDiscount = Money::BRL(0);
+        return array("discount" => $noDiscount, "strategy" => "none") ;
+    }
+
+    private function getDiscountWithStrategyPair(CartDiscountRequest $request, Money $subtotal, MoneyParser $moneyParser, MoneyFormatter $moneyFormatter) {
         $user_mail = $request->get('userEmail');
         $userApiRequest = Request::create('/api/v1/user/'.$user_mail, 'GET');
         $userApiResponse = app()->handle($userApiRequest);
@@ -143,12 +148,12 @@ class CartsController extends Controller
         if($this->isUserExist($code)) { // when user exist
             $product_list = $request->get('products');
             if($this->isUserCollaborator($user)) { // user is collaborator
-                //$all_discount_available_for_this_user = array();
                 $discountForEmployeeCase = $this->getTwentyPercent($subtotal);
                 array_push($result, array("discount" => $discountForEmployeeCase, "strategy" => "employee"));
             }else {
-                $noDiscount = Money::BRL(0);
-                array_push($result, array("discount" => $noDiscount, "strategy" => "none"));
+
+                array_push($result, $this->noDiscountCase());
+
             }
 
             foreach ($product_list as $key => $product) {
@@ -208,8 +213,8 @@ class CartsController extends Controller
                 array_push($result, array("discount" => $discount, "strategy" => "new-user"));
 
             }else {
-                $noDiscount = Money::BRL(0);
-                array_push($result, array("discount" => $noDiscount, "strategy" => "none"));
+
+                array_push($result, $this->noDiscountCase());
 
             }
         }
@@ -218,7 +223,7 @@ class CartsController extends Controller
         foreach ($result as  $res) {
             array_push($onlyDiscountArray, $res['discount']);
         }
-        $biggestDiscount = Money::max(...$onlyDiscountArray);
+        $biggestDiscount = count($onlyDiscountArray) > 1 ? Money::max(...$onlyDiscountArray) : $onlyDiscountArray[0];
 
         $findBiggestDiscountInOriginalArray = array_search($biggestDiscount, array_column($result, 'discount'));
        return $discountWithStrategyPair = $result[$findBiggestDiscountInOriginalArray];
